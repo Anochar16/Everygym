@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "599663898328",
+    "project_id": "everygym-57ad1",
+    "storage_bucket": "everygym-57ad1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:599663898328:android:c0880769bbff11f5eb71ad",
+        "android_client_info": {
+          "package_name": "com.mycompany.everygym"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "599663898328-m9c256o07e47lis2clk64ei1ifvlmqff.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1GUDfCRDkPeYSdI48EJIB6ccY0XVdk0s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "599663898328-m9c256o07e47lis2clk64ei1ifvlmqff.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "599663898328-09h0j46l2b4mjskcrb5u0s68efd3eifm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.everygym"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>599663898328-09h0j46l2b4mjskcrb5u0s68efd3eifm.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.599663898328-09h0j46l2b4mjskcrb5u0s68efd3eifm</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBq-4OszjKkr05CEYABH1wcQdgR_B8Ez3k</string>
+	<key>GCM_SENDER_ID</key>
+	<string>599663898328</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.mycompany.everygym</string>
+	<key>PROJECT_ID</key>
+	<string>everygym-57ad1</string>
+	<key>STORAGE_BUCKET</key>
+	<string>everygym-57ad1.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:599663898328:ios:39a4ce4be5aada27eb71ad</string>
+</dict>
+</plist>
