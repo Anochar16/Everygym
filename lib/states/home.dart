@@ -13,7 +13,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
-  final tab = [Trainning(), Report()];
+final tab = [Trainning(), Report()];
 
   void _onItemTapped(int index) {
     setState(() {

@@ -22,10 +22,36 @@ class dialog {
           ),
         ),
         children: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('Ok'))
+          TextButton(onPressed:()=>Navigator.pop(context),
+          child: Text('Ok'))
         ],
       ),
     );
   }
-  
+   Future<Null>myDialog(
+      BuildContext context, String title, String message) async {
+    await showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: ListTile(
+          title: Text(
+            title,
+            style: TextStyle(
+                fontSize: 18, color: Colors.black, fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(
+            message,
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        children: [
+          TextButton(onPressed:(() => Navigator.pushNamed(context, '/home')),
+          child: Text('Ok'))
+        ],
+      ),
+    );
+  }
 }

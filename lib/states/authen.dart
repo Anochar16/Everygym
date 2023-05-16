@@ -25,9 +25,9 @@ class _AuthenState extends State<Authen> {
   Future<Null> checkAccount() async {
     await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email!, password: password!)
-        .then((value) => Navigator.pushNamed(context, '/trainning'))
-        .catchError(
-            (onError) =>dialog().normalDialog(context, onError.code, onError.message));
+        .then((value) => Navigator.pushNamed(context, '/home'))
+        .catchError((onError) =>
+            dialog().normalDialog(context, onError.code, onError.message));
   }
 
   @override

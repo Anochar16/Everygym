@@ -44,4 +44,5 @@ class divider extends StatelessWidget {
       color: Color.fromARGB(255, 208, 208, 208),
     );
   }
+
 }

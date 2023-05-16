@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:everygym/modals/dataExcercise.dart';
 import 'package:everygym/modals/information_form.dart';
 import 'package:everygym/utility/widget/dialog.dart';
 import 'package:everygym/utility/style/my_style.dart';
@@ -6,8 +7,9 @@ import 'package:everygym/utility/widget/textfeild.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:intl/number_symbols.dart';
+import 'package:provider/provider.dart';
+
+import '../ex_manege/manage_index.dart';
 
 class InformationForm extends StatefulWidget {
   const InformationForm({Key? key}) : super(key: key);
@@ -26,36 +28,83 @@ class _InformationFormState extends State<InformationForm> {
   ];
   String showYear = "Year of brith";
   DateTime _selectedYear = DateTime.now();
-  String? _setexp;
-  String? _sex;
-  String? weigth, height;
-  String? uid, email;
+  String? _setexp, _sex, textBMI;
+  int? age;
+  var weigth, height;
+  var detail;
+  double? bmi, indexUser;
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weigthController = TextEditingController();
-
+  User user = FirebaseAuth.instance.currentUser!;
   Future<Null> setFirstInformation() async {
     await Firebase.initializeApp().then((value) async {
       informationFormModel model = informationFormModel(
+          indexUser: indexUser!,
           sex: _sex!,
-          weigth: _weigthController.text!,
-          height: _heightController.text!,
+          weigth: _weigthController.text,
+          height: _heightController.text,
           exp: _setexp!,
-          year: _selectedYear);
+          year: _selectedYear,
+          bmi: bmi!.toStringAsFixed(2),
+          age: age!,
+          textBMI: textBMI!);
+
       Map<String, dynamic> data = model.toMap();
-      await FirebaseAuth.instance.userChanges().listen((event) {
-        uid = event!.uid;
-        email = event.email;
-      });
       await FirebaseFirestore.instance
           .collection('customer')
-          .doc(uid)
+          .doc(user.uid)
           .collection('information')
-          .doc(email)
+          .doc(user.email)
           .set(data)
-          .then((value) => Navigator.pushNamed(context, '/trainning'))
           .catchError((onError) =>
-             dialog().normalDialog(context, onError.code, onError.message));
+              dialog().normalDialog(context, onError.code, onError.message));
+      if (detail == null) {
+        Navigator.pushNamed(context, '/home');
+      } else {
+        dialog().myDialog(context, '$textBMI', '$detail');
+      }
     });
+    SumDataExeciseModel modelExer =
+        SumDataExeciseModel(sumTime: 0.0, average_score: 0.0, workout: 0);
+    Navigator.pushNamed(context, '/home');
+  }
+
+  Future<Null> setSkip() async {
+    informationFormModel model = informationFormModel(
+        indexUser: 0,
+        sex: '',
+        weigth: '',
+        height: '',
+        exp: '',
+        year: _selectedYear,
+        bmi: '',
+        age: 0,
+        textBMI: '');
+
+    Map<String, dynamic> data = model.toMap();
+    await Firebase.initializeApp().then((value) async {
+      await FirebaseFirestore.instance
+          .collection('customer')
+          .doc(user.uid)
+          .collection('information')
+          .doc(user.email)
+          .set(data)
+          .catchError((onError) =>
+              dialog().normalDialog(context, onError.code, onError.message));
+    });
+    Navigator.pushNamed(context, '/home');
+  }
+
+  Future<Null> setExercise() async {
+    SumDataExeciseModel modelExer =
+        SumDataExeciseModel(sumTime: 0.0, average_score: 0.0, workout: 0);
+    Map<String, dynamic> exercise = modelExer.toMap();
+    await FirebaseFirestore.instance
+        .collection('customer')
+        .doc(user.uid)
+        .collection('exercise')
+        .doc(user.email)
+        .set(exercise);
   }
 
   selectYear(context) async {
@@ -130,7 +179,7 @@ class _InformationFormState extends State<InformationForm> {
                     Row(
                       children: [
                         textContent(
-                            content: 'heightt',
+                            content: 'height',
                             margin: EdgeInsets.only(
                                 top: screenH * 0.02, left: screenW * 0.05)),
                         myFeild().textfeildOutline(
@@ -177,7 +226,12 @@ class _InformationFormState extends State<InformationForm> {
               margin: EdgeInsets.only(right: screenW * 0.03),
               child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/trainning');
+                    setState(() {
+                      _selectedYear = DateTime.now();
+                    });
+                    setExercise();
+                    setSkip();
+                    // Navigator.pushNamed(context, '/home');
                   },
                   child: Text("Skip"))),
           Container(
@@ -188,11 +242,18 @@ class _InformationFormState extends State<InformationForm> {
                         (_selectedYear == null) ||
                         (_weigthController.text == null) ||
                         (_heightController.text == null)) {
-                     dialog().normalDialog(
+                      dialog().normalDialog(
                           context, 'Have space', 'Please fill every black');
                       print(
                           " exp is $_setexp ----- sex is $_sex ----- yesr is $_selectedYear ----- weigth is $_weigthController.text ----- height is $_heightController.text");
                     } else {
+                      List getCalculate = calculateIndex();
+                      bmi = getCalculate[0];
+                      textBMI = getCalculate[1];
+                      age = getCalculate[2];
+                      indexUser = getCalculate[3];
+                      detail = getCalculate[4];
+                      setExercise();
                       setFirstInformation();
                       print(
                           " exp is $_setexp ----- sex is $_sex ----- yesr is $_selectedYear ----- weigth is$_weigthController.text ----- height is $_heightController.text");
@@ -202,6 +263,28 @@ class _InformationFormState extends State<InformationForm> {
         ],
       ),
     );
+  }
+
+  List calculateIndex() {
+    var expIndex, sexIndex, ageIndex, bmiIndex, userIndex;
+    String height = _heightController.text;
+    String weigth = _weigthController.text;
+    double h = double.parse(height);
+    double w = double.parse(weigth);
+    double bmi;
+    List BMIList;
+    int age = DateTime.now().year - _selectedYear.year;
+    expIndex = setIndexExercise(_setexp);
+    sexIndex = setIndexGender(_sex);
+    ageIndex = setIndexAge(age);
+    bmi = setBMIIndex(h, w);
+    BMIList = setValueBMI(bmi);
+    bmiIndex = BMIList[0];
+    textBMI = BMIList[1];
+    var detailBMI = BMIList[2];
+    userIndex = expIndex + sexIndex + ageIndex + bmiIndex;
+
+    return [bmi, textBMI, age, userIndex, detailBMI];
   }
 
   Container selectYeatButton(BuildContext context) {

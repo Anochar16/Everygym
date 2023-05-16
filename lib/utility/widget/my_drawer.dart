@@ -27,7 +27,6 @@ class _MydrawerState extends State<Mydrawer> {
               'Account',
               style: TextStyle(fontSize: 26, color: Colors.black),
             )),
-
         ShowAccount(),
         Container(
             alignment: Alignment.topLeft,
@@ -44,5 +43,3 @@ class _MydrawerState extends State<Mydrawer> {
     );
   }
 }
-
-

@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../ex_manege/manage_index.dart';
 import '../utility/widget/my_drawer.dart';
 
 class EditProfile extends StatefulWidget {
@@ -26,14 +27,14 @@ class _EditProfileState extends State<EditProfile> {
   String? Username = FirebaseAuth.instance.currentUser!.displayName;
   User? user = FirebaseAuth.instance.currentUser;
 
-  String? sex, weigth, height, exp;
+  String? sex, width, height, exp, textBMI;
   int? year;
-  double? screenW, screenH;
+  double? screenW, screenH, bmi, indexUser;
   DateTime? yearOfBirth;
   DateTime? selectyear;
-  int? yearTo;
+  int? yearTo, age;
   final TextEditingController _heightController = TextEditingController();
-  final TextEditingController _weigthController = TextEditingController();
+  final TextEditingController _widthController = TextEditingController();
   final List<String> _exp = [
     'more than 3 times a week',
     'less than 3 times a week',
@@ -57,6 +58,7 @@ class _EditProfileState extends State<EditProfile> {
                   selectedDate: yearOfBirth!,
                   onChanged: (value) {
                     setState(() {
+                      selectyear = value;
                       yearOfBirth = value;
                       showYear = "${value.year}";
                       print('$year');
@@ -76,58 +78,62 @@ class _EditProfileState extends State<EditProfile> {
 
   Future<dynamic> getUserData() async {
     await FirebaseFirestore.instance
-        .collection("customer")
+        .collection('customer')
         .doc(user!.uid)
-        .collection('information')
+        .collection("information")
         .doc(user!.email)
         .snapshots()
         .listen((event) {
       setState(() {
-        _weigthController.text = event.get('weigth');
+        _widthController.text = event.get('weigth');
         sex = event.get('sex');
         exp = event.get('exp');
         _heightController.text = event.get('height');
         year = event.get('year');
         yearOfBirth = DateTime.fromMillisecondsSinceEpoch(year!);
         showYear = yearOfBirth!.year.toString();
-
-        print('mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm ' + year.toString());
-        print('ddddddddddddddddddddddd' + '$showYear');
-        print('ddddddddddddddddddddddd' + '$yearOfBirth');
+        selectyear = yearOfBirth;
+        print(selectyear);
       });
     });
   }
 
-  Future<void> _updateUser(sex, weigth, height, exp, DateTime _year) async {
+  Future<void> _updateUser(
+      sex, width, height, exp, DateTime _year, detailBMI) async {
     if (sex != null) {
       sex = sex;
-      weigth = weigth;
+      width = width;
       height = height;
       exp = exp;
       selectyear = _year;
-      // print('not null');
       print('  -->year is  ' + year.toString());
     } else {
-      // print(' sex: $sex  ------>weigth is $_weigthController ');
+      // print(' sex: $sex  ------>width is $_widthController ');
       print('null value');
     }
     informationFormModel model = informationFormModel(
         sex: sex!,
-        weigth: _weigthController.text!,
-        height: _heightController.text!,
+        weigth: _widthController.text,
+        height: _heightController.text,
         exp: exp!,
-        year: selectyear!);
+        year: selectyear!,
+        bmi: bmi!.toStringAsFixed(2),
+        indexUser: indexUser!,
+        age: age!,
+        textBMI: textBMI!);
     Map<String, dynamic> data = model.toMap();
     await FirebaseFirestore.instance
         .collection('customer')
         .doc(user!.uid)
         .collection('information')
         .doc(user!.email)
-        .update(data).then((value) {
+        .update(data)
+        .then((value) {
       print('update');
       print(' -->year is $year ');
     }).catchError((onError) =>
             dialog().normalDialog(context, onError.code, onError.message));
+    dialog().myDialog(context, '$textBMI', '$detailBMI');
   }
 
   @override
@@ -137,7 +143,6 @@ class _EditProfileState extends State<EditProfile> {
     return Scaffold(
       appBar: AppBar(title: Text('Edit profile')),
       body: Stack(children: [
-            myStyle().myBackground(screenW: screenW!, screenH: screenH!),
         myStyle().myBackground(screenW: screenW!, screenH: screenH!),
         SingleChildScrollView(
           child: Column(
@@ -184,7 +189,7 @@ class _EditProfileState extends State<EditProfile> {
                       children: [
                         genderRadio(screenW!),
                         heightFieldRow(screenW!),
-                        weigthFieldRow(screenW!),
+                        widthFieldRow(screenW!),
                         expRadio(screenW!),
                         Container(
                             alignment: Alignment.topLeft,
@@ -201,13 +206,33 @@ class _EditProfileState extends State<EditProfile> {
                                   width: screenW! * 0.5, child: Text(showYear)),
                             )),
                         ElevatedButton(
-                            onPressed: () {
-                              _updateUser(sex, _weigthController.text,
-                                  _heightController.text, exp, yearOfBirth!);
-                              print('in prossed year is : ' +
-                                  yearOfBirth!.year.toString());
-                            },
-                            child: Text('Save'))
+                          onPressed: () {
+                            if ((sex?.isEmpty ?? true) ||
+                                (exp?.isEmpty ?? true) ||
+                                (selectyear == null) ||
+                                (_widthController.text == null) ||
+                                (_heightController.text == null)) {
+                              dialog().normalDialog(context, 'Have space',
+                                  'Please fill every black');
+                            } else {
+                              List getCalculate = calculateIndex();
+                              bmi = getCalculate[0];
+                              textBMI = getCalculate[1];
+                              age = getCalculate[2];
+                              indexUser = getCalculate[3];
+                              var detailBMI = getCalculate[4];
+
+                              _updateUser(
+                                  sex,
+                                  _widthController.text,
+                                  _heightController.text,
+                                  exp,
+                                  yearOfBirth!,
+                                  detailBMI);
+                            }
+                          },
+                          child: Text('Save'),
+                        )
                       ],
                     ),
                   )
@@ -218,6 +243,29 @@ class _EditProfileState extends State<EditProfile> {
         ),
       ]),
     );
+  }
+
+  List calculateIndex() {
+    DateTime.now().year;
+    var expIndex, sexIndex, ageIndex, bmiIndex, userIndex;
+    String height = _heightController.text;
+    String weigth = _widthController.text;
+    double h = double.parse(height);
+    double w = double.parse(weigth);
+    double bmi;
+    List BMIList;
+    int age = DateTime.now().year - yearOfBirth!.year;
+    expIndex = setIndexExercise(exp);
+    sexIndex = setIndexGender(sex);
+    ageIndex = setIndexAge(age);
+    bmi = setBMIIndex(h, w);
+    BMIList = setValueBMI(bmi);
+    bmiIndex = BMIList[0];
+    textBMI = BMIList[1];
+    var detailBMI = BMIList[2];
+    userIndex = expIndex + sexIndex + ageIndex + bmiIndex;
+
+    return [bmi, textBMI, age, userIndex, detailBMI];
   }
 
   Container buttonYear(double screenW, Future<Null> selectYear(dynamic context),
@@ -239,7 +287,7 @@ class _EditProfileState extends State<EditProfile> {
     return Row(
       children: [
         Text(
-          'Height',
+          'height',
           style:
               TextStyle(fontSize: screenW * 0.04, fontWeight: FontWeight.bold),
         ),
@@ -251,18 +299,18 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-  Row weigthFieldRow(double screenW) {
+  Row widthFieldRow(double screenW) {
     return Row(
       children: [
         Text(
-          'Weigth',
+          'width',
           style:
               TextStyle(fontSize: screenW * 0.04, fontWeight: FontWeight.bold),
         ),
         myFeild().textfeildOutline(
-            hint: _weigthController.text,
+            hint: _widthController.text,
             width: screenW,
-            controll: _weigthController)
+            controll: _widthController)
       ],
     );
   }

@@ -47,7 +47,7 @@ class _CreateAccountState extends State<CreateAccount> {
         });
         //  print('create account');
       }).catchError((onError) =>
-             dialog().normalDialog(context, onError.code, onError.message));
+              dialog().normalDialog(context, onError.code, onError.message));
     });
   }
 
@@ -79,7 +79,7 @@ class _CreateAccountState extends State<CreateAccount> {
                                 if ((useremail?.isEmpty ?? true) ||
                                     (username?.isEmpty ?? true) ||
                                     (password?.isEmpty ?? true)) {
-                                 dialog().normalDialog(context, 'Have space',
+                                  dialog().normalDialog(context, 'Have space',
                                       'Please fill every black');
                                 } else {
                                   createAccount();
